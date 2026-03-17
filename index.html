@@ -1,0 +1,731 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>鍗″笗澶氬浜氱儹姘旂悆鏀鹃绔?/title>
+<style>
+* {
+margin: 0;
+padding: 0;
+box-sizing: border-box;
+}
+
+html, body {
+height: 100%;
+overflow: hidden;
+font-family: 'PingFang SC', 'Microsoft Yahei', sans-serif;
+}
+
+/* 澶╃┖鑳屾櫙 - 鍗″笗澶氬浜氭棩鍑烘笎鍙?*/
+#sky {
+position: relative;
+width: 100vw;
+height: 100vh;
+background: linear-gradient(to bottom,
+#1E88E5 0%,
+#64B5F6 35%,
+#BBDEFB 65%,
+#FFCC80 85%,
+#FFAB91 100%);
+}
+
+/* 搴曢儴鍠€鏂壒鍦拌矊 */
+#sky::after {
+content: '';
+position: absolute;
+bottom: 0;
+left: 0;
+width: 100%;
+height: 22vh;
+background: linear-gradient(to top, #A1887F, #D7CCC8);
+clip-path: polygon(
+0% 75%, 4% 68%, 9% 72%, 14% 63%, 19% 67%, 24% 58%,
+29% 62%, 34% 53%, 39% 57%, 44% 48%, 49% 52%, 54% 43%,
+59% 47%, 64% 38%, 69% 42%, 74% 33%, 79% 37%, 84% 28%,
+89% 32%, 94% 23%, 100% 27%, 100% 100%, 0% 100%
+);
+pointer-events: none;
+z-index: 1;
+}
+
+/* 鐑皵鐞冨鍣?*/
+.balloon {
+position: absolute;
+z-index: 2;
+/* 涓婁笅鎽囨憜妯℃嫙姘旀祦 */
+animation: sway 5s ease-in-out infinite;
+will-change: left, top, z-index;
+}
+
+/* 鐑皵鐞冩皵鍥?- 鐪熷疄閫犲瀷浼樺寲 */
+.balloon-envelope {
+position: relative;
+width: var(--size);
+height: calc(var(--size) * 1.3); /* 鐪熷疄姣斾緥1:1.3 */
+border-radius: 50% 50% 50% 50% / 70% 70% 30% 30%; /* 涓婂ぇ涓嬪皬娴佺晠寮х嚎 */
+background: var(--bg);
+box-shadow:
+inset -15px -15px 30px rgba(0,0,0,0.12), /* 鍐呴儴鏆楅儴妯℃嫙鍘氬害 */
+0 8px 20px rgba(0,0,0,0.15); /* 澶栭儴鎶曞奖 */
+display: flex;
+align-items: center;
+justify-content: center;
+}
+
+/* 姘斿泭楂樺厜 */
+.balloon-envelope::before {
+content: '';
+position: absolute;
+top: 8%;
+left: 10%;
+width: 25%;
+height: 35%;
+background: rgba(255, 255, 255, 0.3);
+border-radius: 50%;
+filter: blur(8px);
+z-index: 1;
+pointer-events: none;
+}
+
+/* 姘斿泭搴曢儴鏀跺彛 */
+.balloon-envelope::after {
+content: '';
+position: absolute;
+bottom: -6%;
+left: 50%;
+transform: translateX(-50%);
+width: calc(var(--size) * 0.15);
+height: calc(var(--size) * 0.08);
+background: inherit;
+border-radius: 0 0 4px 4px;
+z-index: 1;
+pointer-events: none;
+}
+
+/* 鐑皵鐞冩枃瀛?*/
+.balloon-text {
+position: relative;
+color: #fff;
+font-weight: bold;
+font-size: calc(var(--size) * 0.15);
+text-align: center;
+width: 90%;
+word-wrap: break-word;
+line-height: 1.2;
+text-shadow: 0 1px 3px rgba(0,0,0,0.6);
+z-index: 2;
+pointer-events: none;
+}
+
+/* 杩炴帴缁?*/
+.balloon-rope {
+width: 1px;
+height: calc(var(--size) * 0.18);
+background: #666;
+margin: 0 auto;
+}
+
+/* 鍚婄 */
+.balloon-basket {
+width: calc(var(--size) * 0.25);
+height: calc(var(--size) * 0.18);
+background: #8D6E63;
+border-top: 2px solid #5D4037; /* 绡瓙椤堕儴杈圭紭 */
+border-radius: 2px;
+margin: 0 auto;
+box-shadow: 0 3px 6px rgba(0,0,0,0.25);
+display: flex;
+align-items: center;
+justify-content: center;
+transition: background 0.3s ease;
+}
+
+/* 鍚堝苟娆℃暟鏄剧ず */
+.merge-count {
+color: #fff;
+font-size: calc(var(--size) * 0.08);
+font-weight: bold;
+text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+}
+
+/* 寰呭悎骞剁姸鎬佺瀛愰棯鐑?*/
+.balloon.pending-merge .balloon-basket {
+animation: basketPulse 0.8s ease-in-out infinite alternate;
+}
+
+/* ===== 鍙充笂瑙掓帓琛屾鏍峰紡 ===== */
+#ranking-panel {
+position: fixed;
+top: 20px;
+right: 20px;
+width: 220px;
+background: rgba(255,255,255,0.25);
+backdrop-filter: blur(12px);
+border-radius: 16px;
+padding: 12px;
+box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+z-index: 100;
+transition: all 0.3s ease;
+}
+
+/* 鎺掕姒滄姌鍙犵姸鎬?*/
+#ranking-panel.collapsed {
+width: auto;
+border-radius: 50px;
+}
+
+#ranking-header {
+display: flex;
+align-items: center;
+justify-content: space-between;
+margin-bottom: 8px;
+padding: 0 4px;
+}
+
+#ranking-title {
+font-size: 16px;
+font-weight: 600;
+color: #2c3e50;
+white-space: nowrap;
+}
+
+#toggle-ranking {
+width: 24px;
+height: 24px;
+border: none;
+background: rgba(255,255,255,0.8);
+border-radius: 50%;
+cursor: pointer;
+display: flex;
+align-items: center;
+justify-content: center;
+font-size: 12px;
+transition: transform 0.3s ease;
+}
+
+#ranking-panel.collapsed #toggle-ranking {
+transform: rotate(180deg);
+}
+
+#ranking-list {
+max-height: 300px;
+overflow-y: auto;
+transition: all 0.3s ease;
+}
+
+#ranking-panel.collapsed #ranking-list {
+height: 0;
+opacity: 0;
+overflow: hidden;
+margin: 0;
+}
+
+.ranking-item {
+display: flex;
+align-items: center;
+justify-content: space-between;
+padding: 6px 8px;
+border-radius: 8px;
+margin-bottom: 4px;
+background: rgba(255,255,255,0.3);
+font-size: 14px;
+}
+
+.ranking-item:last-child {
+margin-bottom: 0;
+}
+
+.ranking-index {
+width: 20px;
+height: 20px;
+border-radius: 50%;
+background: #7f8c8d;
+color: #fff;
+font-size: 12px;
+font-weight: bold;
+display: flex;
+align-items: center;
+justify-content: center;
+}
+
+/* 鍓嶄笁鍚嶇壒娈婇鑹?*/
+.ranking-item:nth-child(1) .ranking-index { background: #f1c40f; }
+.ranking-item:nth-child(2) .ranking-index { background: #bdc3c7; }
+.ranking-item:nth-child(3) .ranking-index { background: #d35400; }
+
+.ranking-text {
+flex: 1;
+margin: 0 8px;
+color: #2c3e50;
+font-weight: 500;
+}
+
+.ranking-count {
+color: #e74c3c;
+font-weight: bold;
+}
+
+/* 婊氬姩鏉＄編鍖?*/
+#ranking-list::-webkit-scrollbar {
+width: 4px;
+}
+#ranking-list::-webkit-scrollbar-track {
+background: rgba(0,0,0,0.05);
+border-radius: 2px;
+}
+#ranking-list::-webkit-scrollbar-thumb {
+background: rgba(0,0,0,0.2);
+border-radius: 2px;
+}
+
+/* 搴曢儴杈撳叆鍖哄煙 */
+#input-area {
+position: fixed;
+bottom: 30px;
+left: 50%;
+transform: translateX(-50%);
+display: flex;
+gap: 10px;
+z-index: 100;
+background: rgba(255,255,255,0.25);
+backdrop-filter: blur(12px);
+padding: 15px;
+border-radius: 50px;
+box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+}
+
+#input-area input {
+padding: 12px 24px;
+border: none;
+border-radius: 30px;
+width: 300px;
+outline: none;
+font-size: 16px;
+background: rgba(255,255,255,0.9);
+transition: all 0.3s;
+}
+
+#input-area input:focus {
+box-shadow: 0 0 0 3px rgba(255, 112, 67, 0.3);
+}
+
+#input-area button {
+padding: 12px 28px;
+border: none;
+border-radius: 30px;
+background: #FF7043;
+color: white;
+font-size: 16px;
+font-weight: 500;
+cursor: pointer;
+transition: all 0.3s;
+}
+
+#input-area button:hover {
+background: #F4511E;
+transform: translateY(-1px);
+}
+
+/* 鎽囨憜鍔ㄧ敾 */
+@keyframes sway {
+0% { transform: translateY(-4px); }
+50% { transform: translateY(4px); }
+100% { transform: translateY(-4px); }
+}
+
+/* 绡瓙闂儊鍔ㄧ敾 */
+@keyframes basketPulse {
+0% { background: #8D6E63; }
+100% { background: #FFA726; }
+}
+
+/* 鍚堝苟娑堝け鍔ㄧ敾 */
+.balloon.merging {
+animation: merge 0.5s ease forwards;
+}
+
+@keyframes merge {
+0% { transform: scale(1); opacity: 1; }
+100% { transform: scale(0); opacity: 0; }
+}
+
+/* 鏂版皵鐞冨叆鍦哄姩鐢?*/
+.balloon.new {
+animation: newBalloon 0.5s ease forwards, sway 5s ease-in-out infinite;
+}
+
+@keyframes newBalloon {
+0% { transform: scale(0); opacity: 0; }
+100% { transform: scale(1); opacity: 1; }
+}
+
+/* 绉诲姩绔€傞厤 */
+@media (max-width: 768px) {
+#ranking-panel {
+width: 180px;
+top: 10px;
+right: 10px;
+}
+#ranking-title {
+font-size: 14px;
+}
+.ranking-item {
+font-size: 12px;
+}
+#input-area {
+width: 90%;
+}
+#input-area input {
+flex: 1;
+width: auto;
+}
+}
+</style>
+</head>
+<body>
+<div id="sky"></div>
+
+<!-- 鍙充笂瑙掑悎鎴愭帓琛屾 -->
+<div id="ranking-panel">
+<div id="ranking-header">
+<div id="ranking-title">馃敟 鍚堟垚鎺掕姒?/div>
+<button id="toggle-ranking">鈭?/button>
+</div>
+<div id="ranking-list"></div>
+</div>
+
+<!-- 搴曢儴杈撳叆鍖哄煙 -->
+<div id="input-area">
+<input type="text" id="balloon-text" placeholder="鍐欎笅浣犳兂鏀鹃鐨勬枃瀛?.." maxlength="8">
+<button id="fly-btn">鏀鹃鐑皵鐞?/button>
+</div>
+
+<script>
+// 閰嶇疆鍙傛暟锛堝彲鑷淇敼锛?const CONFIG = {
+maxBalloons: 45, // 鏈€澶у悓鏃跺瓨鍦ㄧ殑姘旂悆鏁伴噺
+minSize: 60, // 鏈€灏忔皵鐞冨昂瀵?maxSize: 230, // 鏈€澶ф皵鐞冨昂瀵镐笂闄?floatSpeed: 0.2, // 缁熶竴闅忛椋樺姩閫熷害锛堟墍鏈夋皵鐞冪浉鍚岋紝鎱㈤€燂級
+riseSpeed: 1.2, // 鏂版皵鐞冧笂鍗囬€熷害
+mergeDistance: 25, // 鍚堝苟瑙﹀彂璺濈
+baseAttractFactor: 0.005, // 鍩虹鍚稿紩寮哄害
+mergeScale: 1.2, // 鍚堝苟鍚庡昂瀵告斁澶х郴鏁?mergeWaitTime: 3000, // 鍚堝苟绛夊緟鏃堕棿锛?绉掞級
+minHeight: 0.15, // 鏈€澶ф皵鐞冪殑鏈€浣庨珮搴︼紙绐楀彛鍗犳瘮锛岃秺鎺ヨ繎0瓒婇珮锛?maxHeight: 0.65 // 鏈€灏忔皵鐞冪殑鏈€楂橀珮搴︼紙绐楀彛鍗犳瘮锛岃秺鎺ヨ繎1瓒婁綆锛?};
+
+// 鐑皵鐞冮厤鑹插簱
+const COLORS = [
+'#FF5252', '#FF4081', '#E040FB', '#7C4DFF', '#536DFE',
+'#448AFF', '#40C4FF', '#18FFFF', '#64FFDA', '#69F0AE',
+'#B2FF59', '#EEFF41', '#FFFF00', '#FFD740', '#FFAB40', '#FF6E40'
+];
+
+// 鍒濆榛樿姘旂悆鏂囧瓧
+const DEFAULT_TEXTS = [
+'娴极', '鑷敱', '鏃呰', '骞冲畨', '鍠滀箰', '鏆村瘜', '鍋ュ悍', '濂借繍',
+'寮€蹇?, '椤洪亗', '娓╂煍', '鐑埍', '姊︽兂', '杩滄柟', '娌绘剤', '娓╂殩',
+'鍕囨皵', '甯屾湜', '鏈潵', '缇庡ソ', '涓婂哺', '鑴卞崟', '鍔犺柂', '椤哄埄'
+];
+
+const sky = document.getElementById('sky');
+const input = document.getElementById('balloon-text');
+const flyBtn = document.getElementById('fly-btn');
+const rankingPanel = document.getElementById('ranking-panel');
+const toggleRanking = document.getElementById('toggle-ranking');
+const rankingList = document.getElementById('ranking-list');
+let balloons = [];
+let winWidth = window.innerWidth;
+let winHeight = window.innerHeight;
+
+// 鎺掕姒滄洿鏂伴槻鎶?let updateRankingTimer = null;
+
+// HTML杞箟闃瞂SS
+function escapeHtml(text) {
+return text.replace(/[&<>"']/g, char => ({
+'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
+}[char]));
+}
+
+// 闅忔満鑾峰彇棰滆壊
+function getRandomColor() {
+return COLORS[Math.floor(Math.random() * COLORS.length)];
+}
+
+// 鐢熸垚鐑皵鐞冭儗鏅紙3绉嶆牱寮忥級
+function getBalloonBg() {
+const type = Math.floor(Math.random() * 3);
+const c1 = getRandomColor();
+const c2 = getRandomColor();
+switch(type) {
+case 0:
+return `linear-gradient(135deg, ${c1}, ${c2})`;
+case 1:
+return `repeating-linear-gradient(to bottom, ${c1} 0px, ${c1} 12px, ${c2} 12px, ${c2} 24px)`;
+case 2:
+return `repeating-linear-gradient(to right, ${c1} 0px, ${c1} 12px, ${c2} 12px, ${c2} 24px)`;
+default:
+return c1;
+}
+}
+
+
+// 璁＄畻涓ょ偣璺濈
+function getDistance(x1, y1, x2, y2) {
+return Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
+}
+
+// 銆愪粎鐢ㄤ簬鍚稿紩閫熷害銆戞牴鎹昂瀵歌绠楀惛寮曢€熷害锛屽悓绛夊ぇ灏忛€熷害鐩稿悓锛岃秺澶ц秺鎱?function getAttractSpeedBySize(size) {
+const ratio = (size - CONFIG.minSize) / (CONFIG.maxSize - CONFIG.minSize);
+// 鏈€灏忓昂瀵哥殑鍚稿紩閫熷害鍥哄畾涓?鍊嶏紝瓒婂ぇ閫熷害瓒婁綆
+return 1 - ratio * 0.7;
+}
+
+// 銆愬姩鎬侀珮搴﹁绠椼€戞牴鎹皵鐞冨昂瀵歌绠楁偓娴珮搴︼紝瓒婂ぇ瓒婇珮锛屼笉鍒伴《閮?function getTargetYBySize(size) {
+const ratio = (size - CONFIG.minSize) / (CONFIG.maxSize - CONFIG.minSize);
+// 灏哄瓒婂ぇ锛岄珮搴﹀崰姣旇秺灏忥紙瓒婇潬涓婏級锛岃寖鍥磎inHeight~maxHeight
+const heightRatio = CONFIG.maxHeight - ratio * (CONFIG.maxHeight - CONFIG.minHeight);
+return heightRatio * winHeight;
+}
+
+// 娓呴櫎寰呭悎骞剁姸鎬?function clearPending(balloon) {
+if (balloon.mergeTimer) {
+clearTimeout(balloon.mergeTimer);
+balloon.mergeTimer = null;
+}
+balloon.pendingMerge = null;
+balloon.element.classList.remove('pending-merge');
+}
+
+// 鏇存柊姘旂悆灞傜骇鍜屽昂瀵稿睘鎬?function updateBalloonProps(balloon) {
+// 灞傜骇鍙嶈浆锛氳秺灏忚秺闈犲墠锛寊-index瓒婇珮锛岃秺澶ц秺闈犲悗
+const zIndex = Math.floor(CONFIG.maxSize - balloon.size);
+balloon.element.style.zIndex = zIndex;
+balloon.element.style.setProperty('--size', `${balloon.size}px`);
+}
+
+// ===== 鎺掕姒滄洿鏂板嚱鏁?=====
+function updateRanking() {
+// 闃叉姈锛?00ms鍐呭娆¤Е鍙戝彧鏇存柊涓€娆?clearTimeout(updateRankingTimer);
+updateRankingTimer = setTimeout(() => {
+// 鎸夋枃瀛楀垎缁勭粺璁℃渶澶у悎鎴愭鏁?const textMap = {};
+balloons.forEach(b => {
+if (!textMap[b.text] || b.mergeCount > textMap[b.text]) {
+textMap[b.text] = b.mergeCount;
+}
+});
+// 杞崲涓烘暟缁勫苟鎺掑簭锛氬厛鎸夋鏁伴檷搴忥紝娆℃暟鐩稿悓鎸夋嫾闊抽瀛楁瘝鍗囧簭
+const rankingArr = Object.entries(textMap)
+.map(([text, count]) => ({ text, count }))
+.sort((a, b) => {
+if (b.count !== a.count) {
+return b.count - a.count;
+}
+// 涓枃鎷奸煶鎺掑簭锛岃嫳鏂囪嚜鍔ㄦ寜棣栧瓧姣?return a.text.localeCompare(b.text, 'zh-CN');
+});
+// 娓叉煋鍒楄〃
+rankingList.innerHTML = rankingArr.map((item, index) => `
+<div class="ranking-item">
+<div class="ranking-index">${index + 1}</div>
+<div class="ranking-text">${escapeHtml(item.text)}</div>
+<div class="ranking-count">${item.count}</div>
+</div>
+`).join('');
+}, 300);
+}
+
+// 鍒涘缓鍗曚釜鐑皵鐞?function createBalloon(text, options = {}) {
+// 瓒呰繃鏈€澶ф暟閲忓垹闄ゆ渶鏃╃殑姘旂悆
+if (balloons.length >= CONFIG.maxBalloons) {
+const removed = balloons.shift();
+clearPending(removed);
+removed.element.remove();
+}
+
+const size = options.size || CONFIG.minSize + Math.random() * 40;
+const element = document.createElement('div');
+element.className = 'balloon ' + (options.isNew ? 'new' : '');
+element.style.left = `${Math.random() * (winWidth - size)}px`;
+element.style.top = `${winHeight}px`;
+element.style.setProperty('--size', `${size}px`);
+element.style.setProperty('--bg', getBalloonBg());
+
+// 鎷兼帴HTML
+element.innerHTML = `
+<div class="balloon-envelope">
+<div class="balloon-text">${escapeHtml(text)}</div>
+</div>
+<div class="balloon-rope"></div>
+<div class="balloon-basket">
+${options.mergeCount > 1 ? `<span class="merge-count">脳${options.mergeCount}</span>` : ''}
+</div>
+`;
+
+sky.appendChild(element);
+
+const balloon = {
+text: text.trim(),
+size: size,
+x: parseFloat(element.style.left),
+y: parseFloat(element.style.top),
+targetY: options.targetY || getTargetYBySize(size),
+mergeCount: options.mergeCount || 1,
+element: element,
+pendingMerge: null,
+mergeTimer: null
+};
+
+updateBalloonProps(balloon);
+balloons.push(balloon);
+updateRanking();
+
+// 鏂版皵鐞冧笂鍗囧埌鐩爣楂樺害
+if (options.isNew) {
+const rise = () => {
+if (balloon.y >= balloon.targetY) {
+balloon.y -= CONFIG.riseSpeed;
+element.style.top = `${balloon.y}px`;
+requestAnimationFrame(rise);
+}
+};
+requestAnimationFrame(rise);
+}
+
+return balloon;
+}
+
+// 鎵ц涓や釜姘旂悆鍚堝苟
+function mergeBalloons(a, b) {
+// 鍏堟竻闄ゅ緟鍚堝苟鐘舵€?clearPending(a);
+clearPending(b);
+
+// 娣诲姞娑堝け鍔ㄧ敾
+a.element.classList.add('merging');
+b.element.classList.add('merging');
+
+// 鏂版皵鐞冨湪涓や釜姘旂悆涓棿鐢熸垚
+const newX = (a.x + b.x) / 2;
+const newY = (a.y + b.y) / 2;
+const newSize = Math.min((a.size + b.size) / 2 * CONFIG.mergeScale, CONFIG.maxSize);
+const newText = a.text === b.text ? a.text : a.text + b.text;
+const newMergeCount = a.mergeCount + b.mergeCount;
+const newTargetY = getTargetYBySize(newSize);
+
+// 绉婚櫎鏃ф皵鐞?setTimeout(() => {
+const indexA = balloons.indexOf(a);
+const indexB = balloons.indexOf(b);
+if (indexA > -1) balloons.splice(indexA, 1);
+if (indexB > -1) balloons.splice(indexB > indexA ? indexB - 1 : indexB, 1);
+a.element.remove();
+b.element.remove();
+
+// 鍒涘缓鍚堝苟鍚庣殑鏂版皵鐞?const newBalloon = createBalloon(newText, {
+size: newSize,
+mergeCount: newMergeCount,
+targetY: newTargetY,
+isNew: true
+});
+
+// 鏇存柊鎺掕姒?updateRanking();
+}, 500);
+}
+
+// 妫€鏌ョ浉閭绘皵鐞冩槸鍚﹀彲浠ュ悎骞?function checkMerge() {
+for (let i = 0; i < balloons.length; i++) {
+for (let j = i + 1; j < balloons.length; j++) {
+const a = balloons[i];
+const b = balloons[j];
+// 鐩稿悓鏂囧瓧鎵嶅彲浠ュ悎骞?if (a.text !== b.text) continue;
+
+const dist = getDistance(a.x + a.size / 2, a.y + a.size / 2, b.x + b.size / 2, b.y + b.size / 2);
+if (dist < CONFIG.mergeDistance + (a.size + b.size) / 4) {
+// 濡傛灉杩樻病璁剧疆绛夊緟鍚堝苟锛屽紑濮嬬瓑寰?if (!a.pendingMerge && !b.pendingMerge) {
+a.pendingMerge = b;
+b.pendingMerge = a;
+a.element.classList.add('pending-merge');
+b.element.classList.add('pending-merge');
+
+// 绛夊緟N绉掑悗鍚堝苟锛屾湡闂村鏋滄湁鍏朵粬闈犺繎涓嶄細鎵撴柇
+a.mergeTimer = setTimeout(() => mergeBalloons(a, b), CONFIG.mergeWaitTime);
+b.mergeTimer = a.mergeTimer;
+}
+return;
+}
+}
+}
+}
+
+// 姣忎竴甯ф洿鏂版皵鐞冧綅缃?function updatePositions() {
+balloons.forEach(balloon => {
+// 濡傛灉宸茬粡鍒拌揪鐩爣楂樺害锛岀紦鎱㈤鍔?if (balloon.y <= balloon.targetY) {
+// 闅忔満宸﹀彸椋樺姩
+const randomDrift = (Math.random() - 0.5) * CONFIG.floatSpeed;
+balloon.x += randomDrift;
+
+// 淇濇寔姘旂悆涓嶈秴鍑哄睆骞?if (balloon.x < 0) balloon.x = 0;
+if (balloon.x + balloon.size > winWidth) balloon.x = winWidth - balloon.size;
+
+// 妫€鏌ュ拰鍏朵粬姘旂悆鐨勫惛寮?balloons.forEach(other => {
+if (balloon === other || balloon.pendingMerge || other.pendingMerge) return;
+// 濡傛灉鏂囧瓧鐩稿悓锛屼簰鐩稿惛寮?if (balloon.text === other.text) {
+const dist = getDistance(balloon.x + balloon.size / 2, balloon.y + balloon.size / 2, other.x + other.size / 2, other.y + other.size / 2);
+if (dist > CONFIG.mergeDistance * 2) {
+const dx = (other.x - balloon.x) / dist;
+const dy = (other.y - balloon.y) / dist;
+const speed = CONFIG.baseAttractFactor * dist * getAttractSpeedBySize(balloon.size) * getAttractSpeedBySize(other.size);
+balloon.x += dx * speed;
+balloon.y += dy * speed;
+other.x -= dx * speed;
+other.y -= dy * speed;
+}
+}
+});
+
+balloon.element.style.left = `${balloon.x}px`;
+balloon.element.style.top = `${balloon.y}px`;
+}
+});
+
+checkMerge();
+requestAnimationFrame(updatePositions);
+}
+
+// 鎶樺彔/灞曞紑鎺掕姒?toggleRanking.addEventListener('click', () => {
+rankingPanel.classList.toggle('collapsed');
+});
+
+// 鏀鹃鐑皵鐞冩寜閽偣鍑?flyBtn.addEventListener('click', () => {
+const text = input.value.trim() || DEFAULT_TEXTS[Math.floor(Math.random() * DEFAULT_TEXTS.length)];
+if (!text) return;
+createBalloon(text, { isNew: true });
+input.value = '';
+});
+
+// 鍥炶溅鏀鹃
+input.addEventListener('keydown', e => {
+if (e.key === 'Enter') {
+flyBtn.click();
+}
+});
+
+// 绐楀彛澶у皬鏀瑰彉閲嶇畻
+window.addEventListener('resize', () => {
+winWidth = window.innerWidth;
+winHeight = window.innerHeight;
+});
+
+// 鍒濆鍖栵細鐢熸垚涓€浜涢粯璁ゆ皵鐞?function init() {
+// 闅忔満鐢熸垚10涓垵濮嬫皵鐞?for (let i = 0; i < 10; i++) {
+const text = DEFAULT_TEXTS[Math.floor(Math.random() * DEFAULT_TEXTS.length)];
+createBalloon(text, {
+isNew: false,
+targetY: getTargetYBySize(CONFIG.minSize + Math.random() * 40)
+});
+}
+// 寮€濮嬩綅缃洿鏂板惊鐜?requestAnimationFrame(updatePositions);
+// 鍒濆鍖栨帓琛屾
+updateRanking();
+}
+
+init();
+</script>
+</body>
+</html>
+
