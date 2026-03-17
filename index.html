@@ -3,765 +3,472 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>卡帕多奇亚热气球放飞站</title>
+    <title>热气球话题</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        html, body {
-            height: 100%;
-            overflow: hidden;
-            font-family: 'PingFang SC', 'Microsoft Yahei', sans-serif;
-        }
-
-        /* 天空背景 - 卡帕多奇亚日出渐变 */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { height: 100%; overflow: hidden; font-family: "Microsoft Yahei", sans-serif; }
         #sky {
-            position: relative;
-            width: 100vw;
-            height: 100vh;
-            background: linear-gradient(to bottom, 
-                #1E88E5 0%, 
-                #64B5F6 35%, 
-                #BBDEFB 65%, 
-                #FFCC80 85%, 
-                #FFAB91 100%);
+            position: relative; width: 100vw; height: 100vh;
+            background: linear-gradient(to bottom, #1E88E5 0%, #64B4F8 40%, #FFE0E0 100%);
         }
-
-        /* 底部喀斯特地貌 */
-        #sky::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 22vh;
-            background: linear-gradient(to top, #A1887F, #D7CCC8);
-            clip-path: polygon(
-                0% 75%, 4% 68%, 9% 72%, 14% 63%, 19% 67%, 24% 58%, 
-                29% 62%, 34% 53%, 39% 57%, 44% 48%, 49% 52%, 54% 43%, 
-                59% 47%, 64% 38%, 69% 42%, 74% 33%, 79% 37%, 84% 28%, 
-                89% 32%, 94% 23%, 100% 27%, 100% 100%, 0% 100%
-            );
-            pointer-events: none;
+        #ground {
+            position: absolute; bottom: 0; left: 0; width: 100%; height: 22vh;
+            background: linear-gradient(to top, #A18877, #E9C9B0);
+            clip-path: polygon(0% 75%,4% 68%,9% 72%,14% 63%,19% 67%,24% 58%,29% 62%,34% 53%,39% 57%,44% 48%,49% 52%,54% 43%,59% 47%,64% 38%,69% 42%,74% 33%,79% 37%,84% 28%,89% 32%,94% 23%,100% 27%,100% 100%,0% 100%);
             z-index: 1;
         }
-
-        /* 热气球容器 */
         .balloon {
-            position: absolute;
-            z-index: 2;
-            /* 上下摇摆模拟气流 */
-            animation: sway 5s ease-in-out infinite;
-            will-change: left, top, z-index;
+            position: absolute; will-change: left, top;
+            transition: z-index 0.3s;
         }
-
-        /* 热气球气囊 - 真实造型优化 */
         .balloon-envelope {
             position: relative;
             width: var(--size);
-            height: calc(var(--size) * 1.3); /* 真实比例1:1.3 */
-            border-radius: 50% 50% 50% 50% / 70% 70% 30% 30%; /* 上大下小流畅弧线 */
+            height: calc(var(--size) * 1.3);
+            border-radius: 50% 50% 50% 50% / 70% 70% 30% 30%;
             background: var(--bg);
-            box-shadow: 
-                inset -15px -15px 30px rgba(0,0,0,0.12), /* 内部暗部模拟厚度 */
-                0 8px 20px rgba(0,0,0,0.15); /* 外部投影 */
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            box-shadow: inset -12px -12px 24px rgba(0,0,0,0.15), 0 6px 16px rgba(0,0,0,0.2);
+            display: flex; align-items: center; justify-content: center;
         }
-
-        /* 气囊高光 */
         .balloon-envelope::before {
-            content: '';
-            position: absolute;
-            top: 8%;
-            left: 10%;
-            width: 25%;
-            height: 35%;
-            background: rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            filter: blur(8px);
-            z-index: 1;
-            pointer-events: none;
+            content: ''; position: absolute; top: 8%; left: 10%; width: 25%; height: 35%;
+            background: rgba(255,255,255,0.35); border-radius: 50%; filter: blur(4px);
+            z-index: 1; pointer-events: none;
         }
-
-        /* 气囊底部收口 */
         .balloon-envelope::after {
-            content: '';
-            position: absolute;
-            bottom: -6%;
-            left: 50%;
-            transform: translateX(-50%);
-            width: calc(var(--size) * 0.15);
-            height: calc(var(--size) * 0.08);
-            background: inherit;
-            border-radius: 0 0 4px 4px;
-            z-index: 1;
-            pointer-events: none;
+            content: ''; position: absolute; bottom: -6%; left: 50%; transform: translateX(-50%);
+            width: calc(var(--size)*0.15); height: calc(var(--size)*0.08);
+            background: inherit; border-radius: 0 0 4px 4px; z-index: 1;
         }
-
-        /* 热气球文字 */
         .balloon-text {
-            position: relative;
-            color: #fff;
-            font-weight: bold;
-            font-size: calc(var(--size) * 0.15);
-            text-align: center;
-            width: 90%;
-            word-wrap: break-word;
-            line-height: 1.2;
-            text-shadow: 0 1px 3px rgba(0,0,0,0.6);
-            z-index: 2;
-            pointer-events: none;
+            color: #fff; font-weight: bold; text-align: center; width: 90%;
+            font-size: clamp(12px, calc(var(--size)*0.22), 36px);
+            word-wrap: break-word; word-break: break-all; line-height: 1.1; padding: 0 5px;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.6); z-index: 2; pointer-events: none;
         }
-
-        /* 连接绳 */
-        .balloon-rope {
-            width: 1px;
-            height: calc(var(--size) * 0.18);
-            background: #666;
-            margin: 0 auto;
-        }
-
-        /* 吊篮 */
+        .balloon-rope { width: 1px; height: calc(var(--size)*0.18); background: #666; margin: 0 auto; }
         .balloon-basket {
-            width: calc(var(--size) * 0.25);
-            height: calc(var(--size) * 0.18);
-            background: #8D6E63;
-            border-top: 2px solid #5D4037; /* 篮子顶部边缘 */
-            border-radius: 2px;
-            margin: 0 auto;
-            box-shadow: 0 3px 6px rgba(0,0,0,0.25);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background 0.3s ease;
+            width: calc(var(--size)*0.25); height: calc(var(--size)*0.18);
+            background: #8D7A66; border-top: 2px solid #5D4A33; border-radius: 2px;
+            margin: 0 auto; box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+            display: flex; align-items: center; justify-content: center;
         }
-
-        /* 合并次数显示 */
         .merge-count {
-            color: #fff;
-            font-size: calc(var(--size) * 0.08);
-            font-weight: bold;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+            color: #fff; font-size: clamp(8px, calc(var(--size)*0.08), 18px);
+            font-weight: bold; text-shadow: 0 1px 2px rgba(0,0,0,0.5);
         }
+        .balloon.pending-merge .balloon-basket { animation: basketPulse 0.8s infinite alternate; }
+        @keyframes basketPulse { 0%{background:#8D7A66;}100%{background:#FFA726;} }
+        @keyframes sway { 0%{transform:translateY(-1.5px);}50%{transform:translateY(1.5px);}100%{transform:translateY(-1.5px);} }
+        .balloon.merging { animation: merge 0.5s forwards; }
+        @keyframes merge { 0%{transform:scale(1);opacity:1;}100%{transform:scale(0);opacity:0;} }
 
-        /* 待合并状态篮子闪烁 */
-        .balloon.pending-merge .balloon-basket {
-            animation: basketPulse 0.8s ease-in-out infinite alternate;
+        #ranking {
+            position: fixed; top: 10px; right: 10px; z-index: 999;
+            width: clamp(180px, 20vw, 220px);
+            background: rgba(255,255,255,0.25); backdrop-filter: blur(12px);
+            border-radius: 12px; padding: 10px; box-shadow: 0 2px 12px rgba(0,0,0,0.15);
         }
-
-        /* ===== 右上角排行榜样式 ===== */
-        #ranking-panel {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            width: 220px;
-            background: rgba(255,255,255,0.25);
-            backdrop-filter: blur(12px);
-            border-radius: 16px;
-            padding: 12px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-            z-index: 100;
-            transition: all 0.3s ease;
-        }
-
-        /* 排行榜折叠状态 */
-        #ranking-panel.collapsed {
-            width: auto;
-            border-radius: 50px;
-        }
-
-        #ranking-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 8px;
-            padding: 0 4px;
-        }
-
-        #ranking-title {
-            font-size: 16px;
-            font-weight: 600;
-            color: #2c3e50;
-            white-space: nowrap;
-        }
-
-        #toggle-ranking {
-            width: 24px;
-            height: 24px;
-            border: none;
-            background: rgba(255,255,255,0.8);
-            border-radius: 50%;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            transition: transform 0.3s ease;
-        }
-
-        #ranking-panel.collapsed #toggle-ranking {
-            transform: rotate(180deg);
-        }
-
-        #ranking-list {
-            max-height: 300px;
-            overflow-y: auto;
-            transition: all 0.3s ease;
-        }
-
-        #ranking-panel.collapsed #ranking-list {
-            height: 0;
-            opacity: 0;
-            overflow: hidden;
-            margin: 0;
-        }
-
+        #ranking-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        #ranking-title { font-size: 16px; font-weight: bold; color: #2c3e50; }
+        #toggle-rank { width: 24px; height: 24px; border: none; background: rgba(255,255,255,0.8); border-radius: 50%; cursor: pointer; }
         .ranking-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 6px 8px;
-            border-radius: 8px;
-            margin-bottom: 4px;
-            background: rgba(255,255,255,0.3);
-            font-size: 14px;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 4px 6px; border-radius: 6px; margin-bottom: 4px;
+            background: rgba(255,255,255,0.3); font-size: 14px;
         }
+        .rank-index { width:20px; height:20px; border-radius:50%; background:#7f8c8d; color:#fff; font-size:12px; display: flex; align-items:center; justify-content:center; }
+        .ranking-item:nth-child(1) .rank-index{background:#f1c40f;}
+        .ranking-item:nth-child(2) .rank-index{background:#bdbdc3;}
+        .ranking-item:nth-child(3) .rank-index{background:#d35400;}
 
-        .ranking-item:last-child {
-            margin-bottom: 0;
+        #input-box {
+            position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%); z-index: 999;
+            display: flex; gap: 10px;
+            background: rgba(255,255,255,0.25); backdrop-filter: blur(12px);
+            padding: 12px 16px; border-radius: 40px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
-
-        .ranking-index {
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background: #7f8c8d;
-            color: #fff;
-            font-size: 12px;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        #input-text { 
+            padding: 10px 16px; border: none; border-radius: 24px; width: 200px; 
+            font-size: 16px; background: rgba(255,255,255,0.9); outline: none;
+            /* 修复删除键失效：确保输入框可编辑 */
+            user-select: text;
+            -webkit-user-select: text;
         }
-
-        /* 前三名特殊颜色 */
-        .ranking-item:nth-child(1) .ranking-index { background: #f1c40f; }
-        .ranking-item:nth-child(2) .ranking-index { background: #bdc3c7; }
-        .ranking-item:nth-child(3) .ranking-index { background: #d35400; }
-
-        .ranking-text {
-            flex: 1;
-            margin: 0 8px;
-            color: #2c3e50;
-            font-weight: 500;
-        }
-
-        .ranking-count {
-            color: #e74c3c;
-            font-weight: bold;
-        }
-
-        /* 滚动条美化 */
-        #ranking-list::-webkit-scrollbar {
-            width: 4px;
-        }
-        #ranking-list::-webkit-scrollbar-track {
-            background: rgba(0,0,0,0.05);
-            border-radius: 2px;
-        }
-        #ranking-list::-webkit-scrollbar-thumb {
-            background: rgba(0,0,0,0.2);
-            border-radius: 2px;
-        }
-
-        /* 底部输入区域 */
-        #input-area {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            gap: 10px;
-            z-index: 100;
-            background: rgba(255,255,255,0.25);
-            backdrop-filter: blur(12px);
-            padding: 15px;
-            border-radius: 50px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-        }
-
-        #input-area input {
-            padding: 12px 24px;
-            border: none;
-            border-radius: 30px;
-            width: 300px;
-            outline: none;
-            font-size: 16px;
-            background: rgba(255,255,255,0.9);
-            transition: all 0.3s;
-        }
-
-        #input-area input:focus {
-            box-shadow: 0 0 0 3px rgba(255, 112, 67, 0.3);
-        }
-
-        #input-area button {
-            padding: 12px 28px;
-            border: none;
-            border-radius: 30px;
-            background: #FF7043;
-            color: white;
-            font-size: 16px;
-            font-weight: 500;
+        #fly-btn { 
+            padding: 10px 16px; border: none; border-radius: 24px; 
+            background: #FF7043; color: #fff; font-size: 16px; font-weight: bold; 
             cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        #input-area button:hover {
-            background: #F4511E;
-            transform: translateY(-1px);
-        }
-
-        /* 摇摆动画 */
-        @keyframes sway {
-            0% { transform: translateY(-4px); }
-            50% { transform: translateY(4px); }
-            100% { transform: translateY(-4px); }
-        }
-
-        /* 篮子闪烁动画 */
-        @keyframes basketPulse {
-            0% { background: #8D6E63; }
-            100% { background: #FFA726; }
-        }
-
-        /* 合并消失动画 */
-        .balloon.merging {
-            animation: merge 0.5s ease forwards;
-        }
-
-        @keyframes merge {
-            0% { transform: scale(1); opacity: 1; }
-            100% { transform: scale(0); opacity: 0; }
-        }
-
-        /* 新气球入场动画 */
-        .balloon.new {
-            animation: newBalloon 0.5s ease forwards, sway 5s ease-in-out infinite;
-        }
-
-        @keyframes newBalloon {
-            0% { transform: scale(0); opacity: 0; }
-            100% { transform: scale(1); opacity: 1; }
-        }
-
-        /* 移动端适配 */
-        @media (max-width: 768px) {
-            #ranking-panel {
-                width: 180px;
-                top: 10px;
-                right: 10px;
-            }
-            #ranking-title {
-                font-size: 14px;
-            }
-            .ranking-item {
-                font-size: 12px;
-            }
-            #input-area {
-                width: 90%;
-            }
-            #input-area input {
-                flex: 1;
-                width: auto;
-            }
         }
     </style>
 </head>
 <body>
-    <div id="sky"></div>
+<div id="sky"></div>
+<div id="ground"></div>
 
-    <!-- 右上角合成排行榜 -->
-    <div id="ranking-panel">
-        <div id="ranking-header">
-            <div id="ranking-title">🔥 合成排行榜</div>
-            <button id="toggle-ranking">∧</button>
-        </div>
-        <div id="ranking-list"></div>
+<div id="ranking">
+    <div id="ranking-header">
+        <div id="ranking-title">🔥 话题排行榜</div>
+        <button id="toggle-rank">∧</button>
     </div>
+    <div id="rank-list"></div>
+</div>
 
-    <!-- 底部输入区域 -->
-    <div id="input-area">
-        <input type="text" id="balloon-text" placeholder="写下你想放飞的文字..." maxlength="8">
-        <button id="fly-btn">置顶话题</button>
+<div id="input-box">
+    <input type="text" id="input-text" placeholder="写下你的话题..." maxlength="8">
+    <button id="fly-btn">放飞</button>
+</div>
+
+<script>
+const CONFIG = {
+    minSize: 50,
+    maxSize: 220,
+    baseFloatSpeed: 0.22,
+    mergeDistance: 35, // 缩小合并距离阈值，更容易触发
+    mergeDelay: 1500,  // 缩短合并等待时间
+    topMargin: 0.08,
+    inputMargin: 0.35,
+    attractSpeed: 0.8, // 增加奔赴速度，确保能靠近
+    maxBalloons: 40
+};
+
+const COLORS = [
+    '#FF5252','#FF4081','#E040FB','#7C4DFF','#536DFE','#448AFF',
+    '#40C4FF','#18FFFF','#64FFDA','#69F0AE','#B2FF59','#FFAB40'
+];
+
+const INIT = [
+    { text: '新年快乐', count: 56 },
+    { text: '我爱妈妈', count: 34 },
+    { text: '我爱爸爸', count: 34 },
+    { text: '今年暴富', count: 6 },
+    { text: '今年脱单', count: 7 },
+    { text: '好像去玩', count: 5 },
+    { text: '好运', count: 1 },
+    { text: '马年大吉', count: 1 },
+    { text: '世界和平', count: 66 },
+];
+
+let maxCount = 1;
+let balloons = [];
+let winW = window.innerWidth;
+let winH = window.innerHeight;
+
+const sky = document.getElementById('sky');
+const inputText = document.getElementById('input-text');
+const flyBtn = document.getElementById('fly-btn');
+const rankList = document.getElementById('rank-list');
+const toggleRank = document.getElementById('toggle-rank');
+
+// 修复输入框焦点问题：页面加载后自动聚焦输入框
+window.addEventListener('load', () => {
+    inputText.focus();
+    // 确保输入框可编辑
+    inputText.removeAttribute('readonly');
+    inputText.removeAttribute('disabled');
+});
+
+function randColor() { return COLORS[Math.floor(Math.random() * COLORS.length)]; }
+function randBg() {
+    const t = Math.floor(Math.random() * 3);
+    const c1 = randColor(), c2 = randColor();
+    if (t === 0) return `linear-gradient(135deg, ${c1}, ${c2})`;
+    if (t === 1) return `repeating-linear-gradient(to bottom, ${c1} 0, ${c1} 12px, ${c2} 12px, ${c2} 24px)`;
+    return `repeating-linear-gradient(to right, ${c1} 0, ${c1} 12px, ${c2} 12px, ${c2} 24px)`;
+}
+
+function getSize(c) {
+    const r = Math.min(1, c / 80);
+    return CONFIG.minSize + (CONFIG.maxSize - CONFIG.minSize) * r;
+}
+
+function getWeight(size) {
+    return 1 / (1 + (size - CONFIG.minSize) / CONFIG.minSize * 1.2);
+}
+
+function getTargetY(c) {
+    if (c > maxCount) maxCount = c;
+    const top = winH * CONFIG.topMargin;
+    const bot = winH * (1 - CONFIG.inputMargin);
+    const r = 1 - (c / (maxCount + 5));
+    return top + (bot - top) * r;
+}
+
+function createBalloon(text, opt = {}) {
+    // 限制气球数量，避免性能问题
+    if (balloons.length >= CONFIG.maxBalloons) {
+        const rem = balloons.shift();
+        if (rem.timer) clearTimeout(rem.timer);
+        rem.element.remove();
+    }
+
+    const cnt = opt.mergeCount || 1;
+    const size = getSize(cnt);
+    const weight = getWeight(size);
+
+    const el = document.createElement('div');
+    el.className = 'balloon';
+    el.style.setProperty('--size', size + 'px');
+    el.style.setProperty('--bg', randBg());
+    el.style.animation = `sway ${4 + Math.random() * 3}s ease-in-out infinite`;
+
+    el.innerHTML = `
+    <div class="balloon-envelope">
+        <div class="balloon-text">${text}</div>
     </div>
+    <div class="balloon-rope"></div>
+    <div class="balloon-basket">
+        <span class="merge-count">${cnt}</span>
+    </div>`;
 
-    <script>
-        // 配置参数（可自行修改）
-        const CONFIG = {
-            maxBalloons: 45,          // 最大同时存在的气球数量
-            minSize: 60,              // 最小气球尺寸
-            maxSize: 230,             // 最大气球尺寸上限
-            floatSpeed: 0.2,          // 统一随风飘动速度（所有气球相同，慢速）
-            riseSpeed: 1.2,           // 新气球上升速度
-            mergeDistance: 25,        // 合并触发距离
-            baseAttractFactor: 0.005, // 基础吸引强度
-            mergeScale: 1.2,          // 合并后尺寸放大系数
-            mergeWaitTime: 3000,      // 合并等待时间（3秒）
-            minHeight: 0.15,          // 最大气球的最低高度（窗口占比，越接近0越高）
-            maxHeight: 0.65           // 最小气球的最高高度（窗口占比，越接近1越低）
-        };
+    // 新气球从下方升起
+    const startY = winH * 0.85;
+    const targetY = getTargetY(cnt);
 
-        // 热气球配色库
-        const COLORS = [
-            '#FF5252', '#FF4081', '#E040FB', '#7C4DFF', '#536DFE', '#448AFF', 
-            '#40C4FF', '#18FFFF', '#64FFDA', '#69F0AE', '#B2FF59', '#EEFF41', 
-            '#FFFF00', '#FFD740', '#FFAB40', '#FF6E40'
-        ];
+    const b = {
+        id: Math.random() * Date.now(),
+        element: el,
+        text: text.trim(), // 统一去除空格，避免空格导致匹配失败
+        count: cnt,
+        size,
+        weight,
+        x: opt.x ?? (winW / 2 - size / 2),
+        y: startY,
+        targetY,
+        dir: Math.random() > 0.5 ? 1 : -1,
+        rising: true,
+        pending: null,
+        timer: null,
+        sway: 0,
+        swayDir: 1
+    };
 
-        // 初始默认气球文字
-        const DEFAULT_TEXTS = [
-            '浪漫', '自由', '旅行', '平安', '喜乐', '暴富', '健康', '好运', 
-            '开心', '顺遂', '温柔', '热爱', '梦想', '远方', '治愈', '温暖',
-            '勇气', '希望', '未来', '美好', '上岸', '脱单', '加薪', '顺利'
-        ];
+    el.style.left = b.x + 'px';
+    el.style.top = b.y + 'px';
+    sky.appendChild(el);
+    balloons.push(b);
+    updateRank();
+    return b;
+}
 
-        const sky = document.getElementById('sky');
-        const input = document.getElementById('balloon-text');
-        const flyBtn = document.getElementById('fly-btn');
-        const rankingPanel = document.getElementById('ranking-panel');
-        const toggleRanking = document.getElementById('toggle-ranking');
-        const rankingList = document.getElementById('ranking-list');
-        
-        let balloons = [];
-        let winWidth = window.innerWidth;
-        let winHeight = window.innerHeight;
-        // 排行榜更新防抖
-        let updateRankingTimer = null;
+function clearPending(b) {
+    if (b.timer) clearTimeout(b.timer);
+    b.timer = null;
+    b.pending = null;
+    b.element.classList.remove('pending-merge');
+}
 
-        // HTML转义防XSS
-        function escapeHtml(text) {
-            return text.replace(/[&<>"']/g, char => ({ 
-                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' 
-            }[char]));
+function updateRank() {
+    const map = {};
+    balloons.forEach(b => {
+        if (!map[b.text] || b.count > map[b.text]) map[b.text] = b.count;
+    });
+    const list = Object.entries(map)
+        .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+        .map(([t, c], i) => `
+        <div class="ranking-item">
+            <div class="rank-index">${i + 1}</div>
+            <div class="rank-text">${t}</div>
+            <div class="rank-count">${c}</div>
+        </div>`);
+    rankList.innerHTML = list.join('');
+}
+
+function animate() {
+    const bottomLimit = winH * (1 - CONFIG.inputMargin);
+
+    // 核心：数字小 → 在前；数字大 → 在后
+    balloons.sort((a, b) => a.count - b.count);
+    balloons.forEach((b, i) => {
+        b.element.style.zIndex = i;
+    });
+
+    for (const b of balloons) {
+        if (b.element.classList.contains('merging')) continue;
+
+        // 上升：新气球从下往上飘
+        if (b.rising) {
+            const riseSpeed = 2.5 * b.weight;
+            if (b.y > b.targetY) b.y -= riseSpeed;
+            else b.rising = false;
         }
 
-        // 随机获取颜色
-        function getRandomColor() {
-            return COLORS[Math.floor(Math.random() * COLORS.length)];
+        // 漂浮：越大越慢
+        if (!b.pending) {
+            b.x += b.dir * CONFIG.baseFloatSpeed * b.weight;
+            b.sway += b.swayDir * 0.02 * b.weight;
+            if (Math.abs(b.sway) > 1.5) b.swayDir *= -1;
+        } else {
+            b.sway = 0;
         }
 
-        // 生成热气球背景（3种样式）
-        function getBalloonBg() {
-            const type = Math.floor(Math.random() * 3);
-            const c1 = getRandomColor();
-            const c2 = getRandomColor();
-            
-            switch(type) {
-                case 0: return `linear-gradient(135deg, ${c1}, ${c2})`;
-                case 1: return `repeating-linear-gradient(to bottom, ${c1} 0px, ${c1} 12px, ${c2} 12px, ${c2} 24px)`;
-                case 2: return `repeating-linear-gradient(to right, ${c1} 0px, ${c1} 12px, ${c2} 12px, ${c2} 24px)`;
+        // 边界
+        if (b.x < -b.size) b.x = winW;
+        if (b.x > winW) b.x = -b.size;
+
+        // 强制在输入框上方
+        if (b.y + b.sway > bottomLimit) {
+            b.y = bottomLimit - b.size - 10;
+        }
+
+        b.element.style.left = b.x + 'px';
+        b.element.style.top = (b.y + b.sway) + 'px';
+    }
+
+    // 优化合并逻辑：确保所有同文字气球都能触发合并
+    const textGroups = {};
+    // 1. 按文字分组，过滤掉正在合并的气球
+    balloons.forEach(b => {
+        if (!b.pending && !b.element.classList.contains('merging')) {
+            if (!textGroups[b.text]) {
+                textGroups[b.text] = [];
             }
+            textGroups[b.text].push(b);
         }
+    });
 
-        // 计算两点距离
-        function getDistance(x1, y1, x2, y2) {
-            return Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
-        }
+    // 2. 对每组同文字气球，强制计算最近距离并触发合并
+    for (const text in textGroups) {
+        const group = textGroups[text];
+        if (group.length < 2) continue;
 
-        // 【仅用于吸引速度】根据尺寸计算吸引速度，同等大小速度相同，越大越慢
-        function getAttractSpeedBySize(size) {
-            const ratio = (size - CONFIG.minSize) / (CONFIG.maxSize - CONFIG.minSize);
-            // 最小尺寸的吸引速度固定为1倍，越大速度越低
-            return 1 - ratio * 0.7;
-        }
+        // 遍历每组中的每个气球，找到最近的同文字气球
+        for (let i = 0; i < group.length; i++) {
+            const b1 = group[i];
+            if (b1.pending) continue;
 
-        // 【动态高度计算】根据气球尺寸计算悬浮高度，越大越高，不到顶部
-        function getTargetYBySize(size) {
-            const ratio = (size - CONFIG.minSize) / (CONFIG.maxSize - CONFIG.minSize);
-            // 尺寸越大，高度占比越小（越靠上），范围minHeight~maxHeight
-            const heightRatio = CONFIG.maxHeight - ratio * (CONFIG.maxHeight - CONFIG.minHeight);
-            return heightRatio * winHeight;
-        }
+            let closest = null;
+            let minDistance = Infinity;
 
-        // 清除待合并状态
-        function clearPending(balloon) {
-            if (balloon.mergeTimer) {
-                clearTimeout(balloon.mergeTimer);
-                balloon.mergeTimer = null;
-            }
-            balloon.pendingMerge = null;
-            balloon.element.classList.remove('pending-merge');
-        }
+            // 找当前气球最近的同文字气球
+            for (let j = 0; j < group.length; j++) {
+                if (i === j) continue;
+                const b2 = group[j];
+                if (b2.pending || b2.element.classList.contains('merging')) continue;
 
-        // 更新气球层级和尺寸属性
-        function updateBalloonProps(balloon) {
-            // 层级反转：越小越靠前，z-index越高，越大越靠后
-            const zIndex = Math.floor(CONFIG.maxSize - balloon.size);
-            balloon.element.style.zIndex = zIndex;
-            balloon.element.style.setProperty('--size', `${balloon.size}px`);
-        }
-
-        // ===== 排行榜更新函数 =====
-        function updateRanking() {
-            // 防抖：300ms内多次触发只更新一次
-            clearTimeout(updateRankingTimer);
-            updateRankingTimer = setTimeout(() => {
-                // 按文字分组统计最大合成次数
-                const textMap = {};
-                balloons.forEach(b => {
-                    if (!textMap[b.text] || b.mergeCount > textMap[b.text]) {
-                        textMap[b.text] = b.mergeCount;
-                    }
-                });
-
-                // 转换为数组并排序：先按次数降序，次数相同按拼音首字母升序
-                const rankingArr = Object.entries(textMap)
-                    .map(([text, count]) => ({ text, count }))
-                    .sort((a, b) => {
-                        if (b.count !== a.count) {
-                            return b.count - a.count;
-                        }
-                        // 中文拼音排序，英文自动按首字母
-                        return a.text.localeCompare(b.text, 'zh-CN');
-                    });
-
-                // 渲染列表
-                rankingList.innerHTML = rankingArr.map((item, index) => `
-                    <div class="ranking-item">
-                        <div class="ranking-index">${index + 1}</div>
-                        <div class="ranking-text">${escapeHtml(item.text)}</div>
-                        <div class="ranking-count">${item.count}</div>
-                    </div>
-                `).join('');
-            }, 300);
-        }
-
-        // 创建单个热气球
-        function createBalloon(text, options = {}) {
-            // 超过最大数量删除最早的气球
-            if (balloons.length >= CONFIG.maxBalloons) {
-                const removed = balloons.shift();
-                clearPending(removed);
-                removed.element.remove();
-            }
-
-            const size = options.size || CONFIG.minSize + Math.random() * 40;
-            const element = document.createElement('div');
-            element.className = 'balloon ' + (options.isNew ? 'new' : '');
-            element.style.setProperty('--bg', getBalloonBg());
-            element.style.animationDelay = `${Math.random() * 5}s`; // 随机摇摆偏移更自然
-
-            const mergeCount = options.mergeCount || 1;
-
-            element.innerHTML = `
-                <div class="balloon-envelope">
-                    <div class="balloon-text">${escapeHtml(text)}</div>
-                </div>
-                <div class="balloon-rope"></div>
-                <div class="balloon-basket">
-                    <span class="merge-count">${mergeCount}</span>
-                </div>
-            `;
-
-            const balloon = {
-                id: Date.now() + Math.random(),
-                element,
-                text,
-                size,
-                mergeCount,
-                direction: Math.random() > 0.5 ? 1 : -1, // 初始飘动方向
-                x: options.x || Math.random() * (winWidth - size),
-                y: options.y || winHeight,
-                // 根据尺寸动态计算目标高度，越大越高
-                targetY: options.targetY || getTargetYBySize(size),
-                isRising: options.isRising !== false,
-                pendingMerge: null,
-                mergeTimer: null
-            };
-
-            updateBalloonProps(balloon);
-            element.style.left = `${balloon.x}px`;
-            element.style.top = `${balloon.y}px`;
-
-            sky.appendChild(element);
-            balloons.push(balloon);
-            
-            // 新增气球后更新排行榜
-            updateRanking();
-            return balloon;
-        }
-
-        // 处理吸引和合并逻辑
-        function handleMerge() {
-            const groups = {};
-            balloons.forEach(b => {
-                if (!b.pendingMerge && !b.element.classList.contains('merging')) {
-                    groups[b.text] = groups[b.text] || [];
-                    groups[b.text].push(b);
+                const distance = Math.hypot(b1.x - b2.x, b1.y - b2.y);
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    closest = b2;
                 }
-            });
+            }
 
-            Object.values(groups).forEach(group => {
-                if (group.length < 2) return;
+            if (!closest) continue;
+            const b2 = closest;
 
-                for (let i = 0; i < group.length; i++) {
-                    const b1 = group[i];
-                    for (let j = i + 1; j < group.length; j++) {
-                        const b2 = group[j];
-                        if (b1.pendingMerge || b2.pendingMerge) continue;
+            // 计算方向向量
+            const dx = b2.x - b1.x;
+            const dy = b2.y - b1.y;
+            const distance = Math.hypot(dx, dy);
+            
+            if (distance < 1) continue;
 
-                        // 全屏相互吸引
-                        const dx = b2.x - b1.x;
-                        const dy = b2.y - b1.y;
-                        const distance = getDistance(b1.x, b1.y, b2.x, b2.y);
+            // 增加奔赴速度，确保能靠近
+            const speedFactor = CONFIG.attractSpeed * b1.weight * b2.weight;
+            const moveX = (dx / distance) * speedFactor;
+            const moveY = (dy / distance) * speedFactor;
 
-                        // 同等大小吸引速度相同，越大吸引越慢
-                        const b1AttractSpeed = getAttractSpeedBySize(b1.size);
-                        const b2AttractSpeed = getAttractSpeedBySize(b2.size);
+            // 双向奔赴
+            b1.x += moveX;
+            b1.y += moveY;
+            b2.x -= moveX;
+            b2.y -= moveY;
+
+            // 距离足够近时触发合并
+            if (distance < CONFIG.mergeDistance) {
+                if (!b1.pending && !b2.pending) {
+                    b1.pending = b2;
+                    b2.pending = b1;
+                    b1.element.classList.add('pending-merge');
+                    b2.element.classList.add('pending-merge');
+
+                    // 触发合并倒计时
+                    const mergeTimer = setTimeout(() => {
+                        // 验证两个气球还在列表中且互为pending
+                        const b1Index = balloons.findIndex(b => b.id === b1.id);
+                        const b2Index = balloons.findIndex(b => b.id === b2.id);
                         
-                        b1.x += dx * CONFIG.baseAttractFactor * b1AttractSpeed;
-                        b1.y += dy * CONFIG.baseAttractFactor * b1AttractSpeed;
-                        b2.x -= dx * CONFIG.baseAttractFactor * b2AttractSpeed;
-                        b2.y -= dy * CONFIG.baseAttractFactor * b2AttractSpeed;
+                        if (b1Index > -1 && b2Index > -1 && b1.pending === b2 && b2.pending === b1) {
+                            // 标记为合并中
+                            b1.element.classList.add('merging');
+                            b2.element.classList.add('merging');
 
-                        // 进入合并倒计时
-                        if (distance < CONFIG.mergeDistance) {
-                            b1.pendingMerge = b2;
-                            b2.pendingMerge = b1;
-                            b1.element.classList.add('pending-merge');
-                            b2.element.classList.add('pending-merge');
-
-                            const timer = setTimeout(() => {
-                                if (
-                                    balloons.includes(b1) && balloons.includes(b2) &&
-                                    b1.pendingMerge === b2 && b2.pendingMerge === b1
-                                ) {
-                                    // 执行合并动画
-                                    b1.element.classList.add('merging');
-                                    b2.element.classList.add('merging');
-
-                                    setTimeout(() => {
-                                        // 删除旧气球
-                                        balloons = balloons.filter(b => b.id !== b1.id && b.id !== b2.id);
-                                        b1.element.remove();
-                                        b2.element.remove();
-
-                                        // 生成新气球
-                                        const newSize = Math.min(CONFIG.maxSize, (b1.size + b2.size) / 2 * CONFIG.mergeScale);
-                                        const newBalloon = createBalloon(b1.text, {
-                                            x: (b1.x + b2.x) / 2,
-                                            y: (b1.y + b2.y) / 2,
-                                            size: newSize,
-                                            mergeCount: b1.mergeCount + b2.mergeCount,
-                                            isRising: false,
-                                            isNew: true
-                                        });
-                                        updateBalloonProps(newBalloon);
-                                        // 合并后更新排行榜
-                                        updateRanking();
-                                    }, 500);
-                                } else {
-                                    clearPending(b1);
-                                    clearPending(b2);
-                                }
-                            }, CONFIG.mergeWaitTime);
-
-                            b1.mergeTimer = timer;
-                            b2.mergeTimer = timer;
-                            return;
+                            // 合并动画完成后创建新气球
+                            setTimeout(() => {
+                                // 从数组中移除旧气球
+                                balloons = balloons.filter(b => b.id !== b1.id && b.id !== b2.id);
+                                // 删除DOM元素
+                                b1.element.remove();
+                                b2.element.remove();
+                                // 创建新气球（分数相加）
+                                createBalloon(b1.text, {
+                                    x: (b1.x + b2.x) / 2,
+                                    y: (b1.y + b2.y) / 2,
+                                    mergeCount: b1.count + b2.count
+                                });
+                            }, 400);
+                        } else {
+                            // 取消合并状态
+                            clearPending(b1);
+                            clearPending(b2);
                         }
-                    }
+                    }, CONFIG.mergeDelay);
+
+                    b1.timer = mergeTimer;
+                    b2.timer = mergeTimer;
                 }
-            });
+            }
         }
+    }
 
-        // 动画主循环
-        function animate() {
-            balloons.forEach(balloon => {
-                if (balloon.element.classList.contains('merging')) return;
+    requestAnimationFrame(animate);
+}
 
-                // 上升阶段
-                if (balloon.isRising) {
-                    balloon.y -= CONFIG.riseSpeed;
-                    if (balloon.y <= balloon.targetY) {
-                        balloon.isRising = false;
-                    }
-                }
+// 修复放飞按钮逻辑：确保输入框正常工作
+function fly() {
+    const t = inputText.value.trim();
+    if (!t) {
+        // 空输入时聚焦输入框
+        inputText.focus();
+        return;
+    }
+    createBalloon(t, { mergeCount: 1 });
+    inputText.value = '';
+    inputText.focus(); // 放飞后重新聚焦
+}
 
-                // 待合并状态不单独飘动
-                if (!balloon.pendingMerge) {
-                    // 所有气球飘动速度统一，不受大小影响
-                    balloon.x += balloon.direction * CONFIG.floatSpeed;
-                }
+// 绑定事件（修复键盘事件）
+flyBtn.addEventListener('click', fly);
+inputText.addEventListener('keydown', (e) => {
+    // 保留所有键盘操作，仅在按Enter时放飞
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        fly();
+    }
+    // 其他按键（包括删除键）正常处理
+});
 
-                // 边界循环
-                if (balloon.x < -balloon.size) {
-                    balloon.x = winWidth;
-                } else if (balloon.x > winWidth) {
-                    balloon.x = -balloon.size;
-                }
+// 排行榜折叠/展开
+toggleRank.addEventListener('click', () => {
+    rankList.style.display = rankList.style.display === 'none' ? 'block' : 'none';
+});
 
-                // 更新位置
-                balloon.element.style.left = `${balloon.x}px`;
-                balloon.element.style.top = `${balloon.y}px`;
-            });
+// 窗口大小变化适配
+window.addEventListener('resize', () => {
+    winW = window.innerWidth;
+    winH = window.innerHeight;
+    balloons.forEach(b => { 
+        b.targetY = getTargetY(b.count); 
+    });
+});
 
-            handleMerge();
-            requestAnimationFrame(animate);
-        }
+// 初始化初始气球
+INIT.forEach(item => {
+    createBalloon(item.text, { mergeCount: item.count });
+});
 
-        // 放飞气球
-        function flyBalloon() {
-            const text = input.value.trim();
-            if (!text) return;
-            
-            createBalloon(text, {
-                x: winWidth / 2 - 30 + Math.random() * 60,
-                isNew: true
-            });
-            
-            input.value = '';
-            input.focus();
-        }
-
-        // 初始化
-        function init() {
-            // 生成初始气球
-            DEFAULT_TEXTS.forEach(text => {
-                createBalloon(text, {
-                    isRising: false
-                });
-            });
-
-            // 绑定事件
-            flyBtn.addEventListener('click', flyBalloon);
-            input.addEventListener('keydown', e => e.key === 'Enter' && flyBalloon());
-            
-            // 排行榜折叠/展开
-            toggleRanking.addEventListener('click', () => {
-                rankingPanel.classList.toggle('collapsed');
-            });
-
-            window.addEventListener('resize', () => {
-                winWidth = window.innerWidth;
-                winHeight = window.innerHeight;
-                // 窗口大小改变时重新计算所有气球的目标高度
-                balloons.forEach(b => {
-                    b.targetY = getTargetYBySize(b.size);
-                });
-            });
-
-            // 启动动画
-            requestAnimationFrame(animate);
-        }
-
-        window.addEventListener('load', init);
-    </script>
+// 启动动画循环
+requestAnimationFrame(animate);
+</script>
 </body>
 </html>
