@@ -29,10 +29,10 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'PingFang SC','Micr
 .ropes-svg{display:block;flex-shrink:0}
 
 /* Basket */
-.basket{border-radius:3px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.15);flex-shrink:0;position:relative;overflow:hidden}
-.basket .merge-count{color:#fff;font-weight:700;text-shadow:0 1px 2px rgba(0,0,0,.7);line-height:1;white-space:nowrap}
+.basket{border-radius:2px;display:flex;align-items:center;justify-content:center;flex-shrink:0;position:relative;overflow:hidden;background:rgba(0,0,0,.45);backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px)}
+.basket .merge-count{color:#fff;font-weight:700;line-height:1;white-space:nowrap;letter-spacing:0.5px}
 .basket.flashing{animation:basketFlash .3s ease-in-out infinite alternate}
-@keyframes basketFlash{from{background-color:#8D6E63;border-color:#5D4037}to{background-color:#FF7043;border-color:#E64A19}}
+@keyframes basketFlash{from{background:rgba(0,0,0,.45)}to{background:rgba(255,112,67,.65)}}
 
 /* Paused glow ring */
 .balloon-inner.paused-ring::after{content:'';position:absolute;top:-4px;left:-4px;right:-4px;bottom:-4px;border-radius:50%;border:2px solid rgba(255,112,67,.6);animation:pauseRing 1.5s ease-in-out infinite}
@@ -382,13 +382,11 @@ function buildDOM(b) {
   basket.className = 'basket';
   basket.style.width      = b.bskW + 'px';
   basket.style.height     = b.bskH + 'px';
-  basket.style.background = '#8D6E63';
-  basket.style.borderTop  = '2px solid #5D4037';
 
   const mc = document.createElement('span');
   mc.className = 'merge-count';
   mc.style.fontSize = Math.max(10, Math.round(b.bskH * 0.55)) + 'px';
-  mc.textContent = b.mergeCount > 1 ? '\u00d7' + b.mergeCount : '';
+  mc.textContent = b.mergeCount;
   basket.appendChild(mc);
   b.basketEl = basket;
   b.mcEl = mc;
@@ -683,7 +681,7 @@ function updateStats() {
     html += '<div class="stat-row">'
       + '<span class="stat-text">' + text + '</span>'
       + '<div class="stat-bar-bg"><div class="stat-bar" style="width:' + pct + '%;background:' + c + '"></div></div>'
-      + '<span class="stat-count">\u00d7' + count + '</span>'
+      + '<span class="stat-count">' + count + '</span>'
       + '</div>';
   });
   listEl.innerHTML = html;
