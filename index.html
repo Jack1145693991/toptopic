@@ -21,18 +21,18 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'PingFang SC','Micr
 @keyframes mergeOut{to{opacity:0;transform:scale(0)}}
 
 /* Envelope */
-.envelope-box{position:relative;overflow:visible}
-.envelope-box img{display:block;width:100%;pointer-events:none;-webkit-user-drag:none;user-select:none}
+.envelope-box{position:relative;overflow:hidden}
+.envelope-box img{display:block;width:100%;pointer-events:none;-webkit-user-drag:none;user-select:none;margin-bottom:-6px}
 .balloon-text{position:absolute;top:38%;left:50%;transform:translate(-50%,-50%);color:#fff;font-weight:800;text-shadow:0 1px 4px rgba(0,0,0,.8),0 0 8px rgba(0,0,0,.4);white-space:nowrap;pointer-events:none;z-index:2;letter-spacing:1px}
 
 /* Ropes */
 .ropes-svg{display:block;flex-shrink:0}
 
 /* Basket */
-.basket{border-radius:2px;display:flex;align-items:center;justify-content:center;flex-shrink:0;position:relative;overflow:hidden;background:rgba(0,0,0,.45);backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px)}
+.basket{border-radius:2px 2px 3px 3px;display:flex;align-items:center;justify-content:center;flex-shrink:0;position:relative;overflow:hidden;background:rgba(110,85,60,.7);border-top:2px solid rgba(90,70,45,.8);border-bottom:1px solid rgba(60,45,25,.6);box-shadow:0 1px 3px rgba(0,0,0,.3)}
 .basket .merge-count{color:#fff;font-weight:700;line-height:1;white-space:nowrap;letter-spacing:0.5px}
 .basket.flashing{animation:basketFlash .3s ease-in-out infinite alternate}
-@keyframes basketFlash{from{background:rgba(0,0,0,.45)}to{background:rgba(255,112,67,.65)}}
+@keyframes basketFlash{from{background:rgba(110,85,60,.7);border-color:rgba(90,70,45,.8)}to{background:rgba(255,112,67,.65);border-color:rgba(230,74,25,.8)}}
 
 /* Paused glow ring */
 .balloon-inner.paused-ring::after{content:'';position:absolute;top:-4px;left:-4px;right:-4px;bottom:-4px;border-radius:50%;border:2px solid rgba(255,112,67,.6);animation:pauseRing 1.5s ease-in-out infinite}
@@ -158,9 +158,9 @@ const CFG = {
   SIZE_MIN: 65,
   SIZE_MAX: 160,
   ENVELOPE_H_RATIO: 1.22,   // matches actual balloon image aspect ratio (H/W)
-  ROPE_H: 14,
-  BASKET_W_RATIO: 0.32,
-  BASKET_H: 18,
+  ROPE_H: 1,                // base rope height (size*0.04 - 3, min 0)
+  BASKET_W_RATIO: 0.42,
+  BASKET_H: 10,             // base basket height (baseBskW * 0.50)
   RISE_SPEED: 1.2,
   SWAY_AMP: 4,
   SWAY_PERIOD: 5000,
@@ -248,9 +248,13 @@ function createBalloon(text, opts = {}) {
 
   const envW = size;
   const envH = size * CFG.ENVELOPE_H_RATIO;
-  const bskW = size * CFG.BASKET_W_RATIO;
-  const ropeH = Math.max(10, Math.round(size * 0.10));
-  const bskH = Math.max(18, Math.round(size * 0.18));
+  const baseRopeH = Math.max(4, Math.round(size * 0.04));
+  const ropeH = Math.max(0, baseRopeH - 3);
+  // Basket: square-ish by default, elongates only when digits increase
+  const baseBskW = size * CFG.BASKET_W_RATIO;
+  const digitCount = String(opts.mergeCount || 1).length;
+  const bskW = Math.round(baseBskW + (digitCount - 1) * baseBskW * 0.35);
+  const bskH = Math.max(8, Math.round(baseBskW * 0.50));
   const totalH = envH + ropeH + bskH;
 
   const x = opts.x !== undefined ? opts.x : rand(0, W - size);
@@ -350,20 +354,20 @@ function buildDOM(b) {
   const bskLeft  = (b.envW - b.bskW) / 2;
   const bskRight = bskLeft + b.bskW;
 
-  // Top start: narrow band at envelope bottom (~35% of envelope width, centered)
-  const topSpread = b.envW * 0.35;
+  // Top start: narrow band at envelope bottom (~28% of envelope width, centered)
+  const topSpread = b.envW * 0.28;
   const topStart  = (b.envW - topSpread) / 2;
   const ropes = [
     // outer-left
     [topStart,                    0, bskLeft,                      b.ropeH],
     // mid-left
-    [topStart + topSpread * 0.30, 0, bskLeft + b.bskW * 0.18,      b.ropeH],
+    [topStart + topSpread * 0.25, 0, bskLeft + b.bskW * 0.15,      b.ropeH],
     // center-left
-    [topStart + topSpread * 0.50, 0, bskLeft + b.bskW * 0.40,      b.ropeH],
+    [topStart + topSpread * 0.50, 0, bskLeft + b.bskW * 0.42,      b.ropeH],
     // center-right
-    [topStart + topSpread * 0.50, 0, bskRight - b.bskW * 0.40,     b.ropeH],
+    [topStart + topSpread * 0.50, 0, bskRight - b.bskW * 0.42,     b.ropeH],
     // mid-right
-    [topStart + topSpread * 0.70, 0, bskRight - b.bskW * 0.18,     b.ropeH],
+    [topStart + topSpread * 0.75, 0, bskRight - b.bskW * 0.15,     b.ropeH],
     // outer-right
     [topStart + topSpread,        0, bskRight,                     b.ropeH],
   ];
@@ -385,7 +389,7 @@ function buildDOM(b) {
 
   const mc = document.createElement('span');
   mc.className = 'merge-count';
-  mc.style.fontSize = Math.max(10, Math.round(b.bskH * 0.55)) + 'px';
+  mc.style.fontSize = Math.max(9, Math.round(b.bskH * 0.65)) + 'px';
   mc.textContent = b.mergeCount;
   basket.appendChild(mc);
   b.basketEl = basket;
